@@ -117,7 +117,7 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
 /// `top_level_replacement`.
 fn contract_path(full_path: &Path, top_level_path: &Path, top_level_replacement: &str) -> String {
     if !full_path.starts_with(top_level_path) {
-        return full_path.to_slash().unwrap();
+        return full_path.to_slash_lossy();
     }
 
     if full_path == top_level_path {
@@ -131,8 +131,7 @@ fn contract_path(full_path: &Path, top_level_path: &Path, top_level_replacement:
         path = full_path
             .strip_prefix(top_level_path)
             .unwrap()
-            .to_slash()
-            .unwrap()
+            .to_slash_lossy()
     )
 }
 
@@ -152,7 +151,9 @@ fn contract_repo_path(full_path: &Path, top_level_path: &Path) -> Option<String>
         }
 
         let components: Vec<_> = full_path.components().collect();
-        let repo_name = components[components.len() - i - 1].as_os_str().to_str()?;
+        let repo_name = components[components.len() - i - 1]
+            .as_os_str()
+            .to_string_lossy();
 
         if i == 0 {
             return Some(repo_name.to_string());
@@ -163,7 +164,7 @@ fn contract_repo_path(full_path: &Path, top_level_path: &Path) -> Option<String>
             "{repo_name}{separator}{path}",
             repo_name = repo_name,
             separator = "/",
-            path = path.to_slash()?
+            path = path.to_slash_lossy()
         ));
     }
     None
